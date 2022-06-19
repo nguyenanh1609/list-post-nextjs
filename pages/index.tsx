@@ -7,6 +7,7 @@ import {
   MenuItem,
   Pagination,
   Select,
+  styled,
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
@@ -16,7 +17,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import OneColumnLayout from "../layout/oneColumnLayout";
-import { ItemPost } from "./style";
 
 interface HomeProps {
   listPosts: Array<listPostsProps>;
@@ -51,6 +51,7 @@ const Home = (props: HomeProps) => {
 
   useEffect(() => {
     setData([...listPosts].slice(0, 12));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleNextPageDetail = (id: string) => {
@@ -279,3 +280,47 @@ export async function getServerSideProps() {
 }
 
 export default Home;
+
+// #dba83d
+
+export const ItemPost = styled(Box)(() => ({
+  width: "100%",
+  height: "100%",
+  padding: "30px",
+
+  borderRadius: "4px",
+  boxShadow: "rgb(10 10 10 / 82%) 0px 0px 5px",
+  "& > .user-infor": {
+    display: "flex",
+    columnGap: "20px",
+    "& > .user-infor-img": {
+      width: "50px",
+      height: "50px",
+      "& > img": {
+        borderRadius: "99999px",
+      },
+    },
+    "& > .user-infor-content": {},
+  },
+  "& > .content-post": {
+    marginTop: "30px",
+    display: "flex",
+    alignItems: "center",
+    columnGap: "20px",
+    "& > .content-post-img": {
+      flexBasis: "50%",
+    },
+    "& > .content-post-infor": {
+      display: "flex",
+      flexBasis: "50%",
+      flexDirection: "column",
+      rowGap: "8px",
+      "& > .content-post-infor-like": {
+        width: "20px",
+        height: "20px",
+        display: "flex",
+        columnGap: "8px",
+      },
+    },
+  },
+}));
