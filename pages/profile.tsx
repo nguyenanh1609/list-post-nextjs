@@ -35,12 +35,6 @@ function Profile() {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Box display="flex" columnGap="20px">
-                  <Typography>Đăng nhập :</Typography>
-                  <Typography>
-                    {moment(session?.expires).format("DD/MM/YYYY HH:mm:ss")}
-                  </Typography>
-                </Box>
-                <Box display="flex" columnGap="20px">
                   <Typography>Email:</Typography>
                   <Typography>{session?.user?.email}</Typography>
                 </Box>
