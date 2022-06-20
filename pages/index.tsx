@@ -1,6 +1,7 @@
 import {
   CardMedia,
   Chip,
+  CircularProgress,
   FormControl,
   Grid,
   InputLabel,
@@ -14,6 +15,7 @@ import { Box } from "@mui/system";
 import moment from "moment";
 import type { NextPage } from "next";
 import Head from "next/head";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import OneColumnLayout from "../layout/oneColumnLayout";
@@ -22,6 +24,7 @@ interface HomeProps {
   listPosts: Array<listPostsProps>;
   page: string | number;
   total: string | number;
+  status: boolean;
 }
 
 interface listPostsProps {
@@ -42,15 +45,16 @@ interface listPostsProps {
 
 const Home = (props: HomeProps) => {
   const router = useRouter();
-
-  const { listPosts } = props;
-
+  const { listPosts, page, total, status } = props;
   const [data, setData] = useState<Array<listPostsProps>>([]);
+  const [dataDefault, setDataDefault] = useState<Array<listPostsProps>>([]);
   const [sortLike, setSortLike] = useState<number>(0);
-  const [page, setPage] = useState<number>(1);
+  const [stausLoading, setStausLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setData([...listPosts].slice(0, 12));
+    setData([...listPosts]);
+    setDataDefault([...listPosts]);
+    setStausLoading(status);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -62,43 +66,43 @@ const Home = (props: HomeProps) => {
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
-    setPage(value);
-    if (value === 1) {
-      switch (sortLike) {
-        case 1:
-          setData(
-            [...listPosts].slice(0, 12).sort((a, b) => a.likes - b.likes)
-          );
-          break;
-        case 2:
-          setData(
-            [...listPosts].slice(0, 12).sort((a, b) => b.likes - a.likes)
-          );
-          break;
+    let json;
+    try {
+      setData([]);
+      setDataDefault([]);
 
-        default:
-          setData([...listPosts].slice(0, 12));
-          break;
-      }
-      return;
-    } else {
-      switch (sortLike) {
-        case 1:
-          setData(
-            [...listPosts].slice(12, 24).sort((a, b) => a.likes - b.likes)
-          );
-          break;
-        case 2:
-          setData(
-            [...listPosts].slice(12, 24).sort((a, b) => b.likes - a.likes)
-          );
-          break;
+      await setStausLoading(true);
 
-        default:
-          setData([...listPosts].slice(12, 24));
-          break;
-      }
-      return;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}?limit=12&page=${value}`,
+        {
+          headers: {
+            "app-id": "62adde6f72c63a0f1600fa5a",
+          },
+        }
+      );
+
+      json = await res.json();
+
+      await setStausLoading(false);
+    } catch (error) {
+      await setStausLoading(true);
+    }
+
+    const listPosts = json.data;
+
+    setDataDefault(listPosts);
+
+    switch (sortLike) {
+      case 1:
+        setData([...listPosts].sort((a, b) => a.likes - b.likes));
+        break;
+      case 2:
+        setData([...listPosts].sort((a, b) => b.likes - a.likes));
+        break;
+      default:
+        setData([...listPosts]);
+        break;
     }
   };
 
@@ -114,11 +118,7 @@ const Home = (props: HomeProps) => {
         break;
 
       default:
-        setData(
-          page === 1
-            ? [...listPosts].slice(0, 12)
-            : [...listPosts].slice(12, 24)
-        );
+        setData(dataDefault);
         break;
     }
   };
@@ -128,10 +128,7 @@ const Home = (props: HomeProps) => {
       <Head>
         <title>List post</title>
         <meta name="description" content="Home page" />
-        <link
-          rel="icon"
-          href="https://scontent.fhan14-1.fna.fbcdn.net/v/t1.6435-1/183517623_1467332616945216_4411592049694411845_n.jpg?stp=cp0_dst-jpg_p40x40&_nc_cat=101&ccb=1-7&_nc_sid=dbb9e7&_nc_ohc=tlVT9Kob-RMAX-jBavk&_nc_ht=scontent.fhan14-1.fna&oh=00_AT_8aS8bktGB6uiKH9xdw_m2Nay6-WBdYv2OOTZ98cV5vA&oe=62D32A35"
-        />
+        <link rel="icon" href={`${process.env.NEXT_PUBLIC_API_URL_ICON_1}`} />
       </Head>
       <OneColumnLayout>
         <>
@@ -157,90 +154,114 @@ const Home = (props: HomeProps) => {
             </Box>
           </Box>
 
-          <Grid container spacing={2}>
-            {data &&
-              data.map((e, index) => (
-                <Grid item xs={12} md={6} lg={4} key={index}>
-                  <ItemPost>
-                    <Box className="user-infor">
-                      <Box className="user-infor-img">
-                        <CardMedia
-                          component="img"
-                          image={e.owner.picture}
-                          alt="Paella dish"
-                        />
-                      </Box>
-                      <Box className="user-infor-content">
-                        <Typography>
-                          {`${e.owner.title} ${e.owner.firstName} ${e.owner.lastName}`}
-                        </Typography>
-                        <Typography>
-                          {moment(e.publishDate).format("MMM DD YYYY HH:mm:ss")}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box className="content-post">
-                      <Box className="content-post-img">
-                        <CardMedia
-                          component="img"
-                          image={e.image}
-                          alt="Paella dish"
-                          sx={{
-                            width: "100%",
-                            height: "240px",
-                            objectFit: "cover",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleNextPageDetail(e.id)}
-                        />
-                      </Box>
-                      <Box className="content-post-infor">
-                        <Typography>
-                          {moment(e.publishDate).format("MMM DD YYYY HH:mm:ss")}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleNextPageDetail(e.id)}
-                        >
-                          {e.text}
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            columnGap: "5px",
-                            flexWrap: "wrap",
-                            rowGap: "5px",
-                          }}
-                        >
-                          {e.tags.map((e, index) => (
-                            <Chip
-                              label={e}
-                              color="primary"
-                              size="small"
-                              key={index}
-                            />
-                          ))}
-                        </Box>
-                        <Box className="content-post-infor-like">
-                          <CardMedia
-                            component="img"
-                            image="https://dummyapi.io/img/like.svg"
-                            alt="Paella dish"
-                            sx={{
-                              width: "100%",
-                              height: "100%",
+          {stausLoading && (
+            <Box display="flex" justifyContent="center">
+              <CircularProgress />
+            </Box>
+          )}
+
+          {!stausLoading && (
+            <Grid container spacing={2}>
+              {data &&
+                data.map((e, index) => (
+                  <Grid item xs={12} md={6} lg={4} key={index}>
+                    <ItemPost>
+                      <Box className="user-infor">
+                        <Box className="user-infor-img">
+                          <Image
+                            src={e.owner.picture}
+                            alt={`${e.owner.title} ${e.owner.firstName} ${e.owner.lastName}`}
+                            layout="responsive"
+                            width={"100%"}
+                            height={"100%"}
+                            style={{
+                              borderRadius: "99999px",
                             }}
                           />
-                          <Typography>{e.likes}</Typography>
+                        </Box>
+                        <Box className="user-infor-content">
+                          <Typography>
+                            {`${e.owner.title} ${e.owner.firstName} ${e.owner.lastName}`}
+                          </Typography>
+                          <Typography>
+                            {moment(e.publishDate).format(
+                              "MMM DD YYYY HH:mm:ss"
+                            )}
+                          </Typography>
                         </Box>
                       </Box>
-                    </Box>
-                  </ItemPost>
-                </Grid>
-              ))}
-          </Grid>
+                      <Box className="content-post">
+                        <Box
+                          className="content-post-img"
+                          sx={{
+                            "& > img": {
+                              width: "100%",
+                              height: "240px",
+                            },
+                          }}
+                        >
+                          <Image
+                            src={e.image}
+                            alt={``}
+                            onClick={() => handleNextPageDetail(e.id)}
+                            layout="responsive"
+                            width={"100%"}
+                            height={"100%"}
+                            style={{
+                              cursor: "pointer",
+                            }}
+                          />
+                        </Box>
+                        <Box className="content-post-infor">
+                          <Typography>
+                            {moment(e.publishDate).format(
+                              "MMM DD YYYY HH:mm:ss"
+                            )}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              cursor: "pointer",
+                            }}
+                            onClick={() => handleNextPageDetail(e.id)}
+                          >
+                            {e.text}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              columnGap: "5px",
+                              flexWrap: "wrap",
+                              rowGap: "5px",
+                            }}
+                          >
+                            {e.tags.map((e, index) => (
+                              <Chip
+                                label={e}
+                                color="primary"
+                                size="small"
+                                key={index}
+                              />
+                            ))}
+                          </Box>
+                          <Box className="content-post-infor-like">
+                            <CardMedia
+                              component="img"
+                              image="https://dummyapi.io/img/like.svg"
+                              alt="Paella dish"
+                              sx={{
+                                width: "100%",
+                                height: "100%",
+                              }}
+                            />
+                            <Typography>{e.likes}</Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </ItemPost>
+                  </Grid>
+                ))}
+            </Grid>
+          )}
           <Box
             sx={{
               margin: "20px 0px",
@@ -249,7 +270,7 @@ const Home = (props: HomeProps) => {
             }}
           >
             <Pagination
-              count={2}
+              count={Math.ceil(Number(total) / 12)}
               variant="outlined"
               shape="rounded"
               color="primary"
@@ -263,7 +284,7 @@ const Home = (props: HomeProps) => {
 };
 
 export async function getServerSideProps() {
-  const res = await fetch("https://dummyapi.io/data/v1/post?limit=24", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}?limit=12`, {
     headers: {
       "app-id": "62adde6f72c63a0f1600fa5a",
     },
@@ -275,6 +296,9 @@ export async function getServerSideProps() {
   return {
     props: {
       listPosts: listPosts,
+      page: json.page,
+      total: json.total,
+      status: false,
     },
   };
 }

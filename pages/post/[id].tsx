@@ -10,6 +10,7 @@ import { Box } from "@mui/system";
 import moment from "moment";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import OneColumnLayout from "../../layout/oneColumnLayout";
 
@@ -36,15 +37,18 @@ function Post(props: PostDetailProps) {
 
   const router = useRouter();
 
+  console.log(router.isFallback);
+
+  if (router.isFallback) {
+    return <div>loading ........</div>;
+  }
+
   return (
     <>
       <Head>
         <title>Post detail</title>
         <meta name="description" content="Home page" />
-        <link
-          rel="icon"
-          href="https://scontent.fhan2-1.fna.fbcdn.net/v/t39.30808-1/282045475_1212179512858216_1015734488003281030_n.jpg?stp=dst-jpg_p200x200&_nc_cat=101&ccb=1-7&_nc_sid=7206a8&_nc_ohc=tuXi4g9LQZUAX9qhckg&_nc_ht=scontent.fhan2-1.fna&oh=00_AT-cEQNjxIG9VM3VKmaCoiYqWuMFv1ezQRx_UkSg5VAEmQ&oe=62B2F068"
-        />
+        <link rel="icon" href={`${process.env.NEXT_PUBLIC_API_URL_ICON_2}`} />
       </Head>
       <OneColumnLayout>
         <>
@@ -63,10 +67,15 @@ function Post(props: PostDetailProps) {
               <ItemPost>
                 <Box className="user-infor">
                   <Box className="user-infor-img">
-                    <CardMedia
-                      component="img"
-                      image={postData.owner.picture}
-                      alt="Paella dish"
+                    <Image
+                      src={postData.owner.picture}
+                      alt={`${postData.owner.title} ${postData.owner.firstName} ${postData.owner.lastName}`}
+                      layout="responsive"
+                      width={"100%"}
+                      height={"100%"}
+                      style={{
+                        borderRadius: "99999px",
+                      }}
                     />
                   </Box>
                   <Box className="user-infor-content">
@@ -82,15 +91,13 @@ function Post(props: PostDetailProps) {
                 </Box>
                 <Box className="content-post">
                   <Box className="content-post-img">
-                    <CardMedia
-                      component="img"
-                      image={postData.image}
-                      alt="Paella dish"
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
+                    <Image
+                      src={postData.image}
+                      alt={``}
+                      layout="responsive"
+                      width={"100%"}
+                      height={"100%"}
+                      style={{ objectFit: "cover" }}
                     />
                   </Box>
                   <Box className="content-post-infor">
@@ -136,23 +143,26 @@ function Post(props: PostDetailProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const res = await fetch("https://dummyapi.io/data/v1/post?limit=24", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`, {
     headers: {
       "app-id": "62adde6f72c63a0f1600fa5a",
     },
   });
+
   const json = await res.json();
 
   const path = json.data.map((item: any) => ({ params: { id: item.id } }));
 
+  console.log(path);
+
   return {
     paths: path,
-    fallback: false,
+    fallback: true,
   };
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const res = await fetch(`https://dummyapi.io/data/v1/post/${params?.id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${params?.id}`, {
     headers: {
       "app-id": "62adde6f72c63a0f1600fa5a",
     },
@@ -166,6 +176,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     props: {
       postData: postData,
     },
+    revalidate: 10,
   };
 };
 
