@@ -1,8 +1,8 @@
-import { Grid } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { Container } from "@mui/system";
 import Head from "next/head";
 import FooterApp from "../../components/footer";
-import Header from "../../components/header";
+import ResponsiveAppBar from "../../components/header";
 
 interface OneColumnLayout {
   children: JSX.Element;
@@ -11,19 +11,25 @@ interface OneColumnLayout {
 function OneColumnLayout(props: OneColumnLayout) {
   return (
     <>
-      <Header />
-      <Container maxWidth="xl">
-        <Grid
-          container
-          sx={{
-            margin: "20px 0px",
-          }}
-        >
-          <Grid item xs={12}>
-            {props.children}
+      <ResponsiveAppBar />
+      <Box
+        sx={{
+          minHeight: "80vh",
+        }}
+      >
+        <Container maxWidth="xl">
+          <Grid
+            container
+            sx={{
+              margin: "20px 0px",
+            }}
+          >
+            <Grid item xs={12}>
+              {props.children}
+            </Grid>
           </Grid>
-        </Grid>
-      </Container>
+        </Container>
+      </Box>
       <FooterApp />
     </>
   );

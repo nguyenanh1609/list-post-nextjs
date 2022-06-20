@@ -16,6 +16,7 @@ import moment from "moment";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import OneColumnLayout from "../layout/oneColumnLayout";
@@ -74,7 +75,7 @@ const Home = (props: HomeProps) => {
       await setStausLoading(true);
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}?limit=12&page=${value}`,
+        `${process.env.NEXT_PUBLIC_API_URL}?limit=12&page=${value - 1}`,
         {
           headers: {
             "app-id": "62adde6f72c63a0f1600fa5a",
@@ -177,13 +178,20 @@ const Home = (props: HomeProps) => {
                             style={{
                               borderRadius: "99999px",
                             }}
+                            placeholder="blur"
+                            blurDataURL={e.owner.picture}
                           />
                         </Box>
                         <Box className="user-infor-content">
                           <Typography>
                             {`${e.owner.title} ${e.owner.firstName} ${e.owner.lastName}`}
                           </Typography>
-                          <Typography>
+                          <Typography
+                            sx={{
+                              fontSize: "14px",
+                              color: "#65676b",
+                            }}
+                          >
                             {moment(e.publishDate).format(
                               "MMM DD YYYY HH:mm:ss"
                             )}
@@ -200,20 +208,30 @@ const Home = (props: HomeProps) => {
                             },
                           }}
                         >
-                          <Image
-                            src={e.image}
-                            alt={``}
-                            onClick={() => handleNextPageDetail(e.id)}
-                            layout="responsive"
-                            width={"100%"}
-                            height={"100%"}
-                            style={{
-                              cursor: "pointer",
-                            }}
-                          />
+                          <Link href={`/post/${e.id}`}>
+                            <a>
+                              <Image
+                                src={e.image}
+                                alt={``}
+                                layout="responsive"
+                                width={"100%"}
+                                height={"100%"}
+                                style={{
+                                  cursor: "pointer",
+                                }}
+                                placeholder="blur"
+                                blurDataURL={e.image}
+                              />
+                            </a>
+                          </Link>
                         </Box>
                         <Box className="content-post-infor">
-                          <Typography>
+                          <Typography
+                            sx={{
+                              fontSize: "14px",
+                              color: "#65676b",
+                            }}
+                          >
                             {moment(e.publishDate).format(
                               "MMM DD YYYY HH:mm:ss"
                             )}
@@ -222,9 +240,10 @@ const Home = (props: HomeProps) => {
                             sx={{
                               cursor: "pointer",
                             }}
-                            onClick={() => handleNextPageDetail(e.id)}
                           >
-                            {e.text}
+                            <Link href={`/post/${e.id}`}>
+                              <a> {e.text}</a>
+                            </Link>
                           </Typography>
                           <Box
                             sx={{

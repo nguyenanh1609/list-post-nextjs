@@ -76,6 +76,8 @@ function Post(props: PostDetailProps) {
                       style={{
                         borderRadius: "99999px",
                       }}
+                      placeholder="blur"
+                      blurDataURL={postData.owner.picture}
                     />
                   </Box>
                   <Box className="user-infor-content">
@@ -98,6 +100,8 @@ function Post(props: PostDetailProps) {
                       width={"100%"}
                       height={"100%"}
                       style={{ objectFit: "cover" }}
+                      placeholder="blur"
+                      blurDataURL={postData.image}
                     />
                   </Box>
                   <Box className="content-post-infor">
@@ -152,8 +156,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const json = await res.json();
 
   const path = json.data.map((item: any) => ({ params: { id: item.id } }));
-
-  console.log(path);
 
   return {
     paths: path,
